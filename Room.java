@@ -1,4 +1,4 @@
-class Room extends Hotel{
+class Room{
     private String type, name;
     private int cost, room, nights, number;
     private double bill;
@@ -32,20 +32,6 @@ class Room extends Hotel{
         this.type = roomType;
         this.cost = costPerNight;
     }
-
-    // public Room(int roomNum, String roomType) {
-    //     this.room = roomNum;
-    //     this.type = roomType;
-    //     if (roomNum >= 1 && roomNum <= 50) {
-    //         this.cost = MAX_SINGLE_COST;
-    //     } else if (roomNum > 50 && roomNum <= 60) {
-    //         this.cost = MIN_SINGLE_COST;
-    //     } else if (roomNum > 60 && roomNum <= 90) {
-    //         this.cost = MAX_DOUBLE_COST;
-    //     } else {
-    //         this.cost = MIN_DOUBLE_COST;
-    //     }
-    // }
 
     public String getName() {
         return name;

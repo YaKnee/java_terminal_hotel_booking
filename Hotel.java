@@ -13,12 +13,13 @@ public class Hotel {
     // Constants for maximum rooms, nights, and costs
     private static final byte MAX_ROOMS_PER_PERSON = 3;
     private static final byte MAX_NIGHTS = 28;
-    static final int MAX_SINGLE_ROOM_COST = 100;
-    static final int MIN_SINLGE_ROOM_COST = 90;
-    static final int MAX_DOUBLE_ROOM_COST = 150;
-    static final int MIN_DOUBLE_ROOM_COST = 140;
+    private static final int MAX_SINGLE_ROOM_COST = 100;
+    private static final int MIN_SINLGE_ROOM_COST = 90;
+    private static final int MAX_DOUBLE_ROOM_COST = 150;
+    private static final int MIN_DOUBLE_ROOM_COST = 140;
 
     // TO DO
+    // add display all available rooms to menu?
     // change all reservation checks to use attribute of room class
     // make a readme, how it works, comment how you did and what was difficult
     // make 6 only reserve the room and another number to book rooms then
@@ -32,97 +33,95 @@ public class Hotel {
         System.setProperty("file.encoding", "UTF-8"); // y no work
         // Load available and booked rooms from files
         List<Room> allRooms = loadAllRooms();
-        greeting();
 
-        // Check if there are available rooms
-        if (allRooms.size() < 1) {
-            System.out.println("Unfortunately we are fully booked at the moment.");
-            System.out.println("Please try again in the future.");
-        } // add checks for single/double rooms exceeded?
-        else {
-            boolean repeat = true;
-            String name = "null";
-            int choice;
-            do {// change to two sout's, single and double?
-                int totalRoomsLeft = roomCount(allRooms, name);
-                System.out.println("\nWe currently have " + totalRoomsLeft + " room(s) available.");
-                // Set/reset variables
-                Room room = new Room();
-                int roomNum = 0;
-                int nights = 0;
-                String roomType = "";
-                int cost = 0;
+        boolean repeat = true;
+        String name = "null";
+        int choice;
+        do {// change to two sout's, single and double?
+            int totalRoomsLeft = roomCount(allRooms, name);
+            if (totalRoomsLeft == 0) {
+                System.out.println("\nUnfortunately we are fully booked at the moment.");
+                System.out.println("Please try again in the future.");
+                System.exit(0);
+            }
+            greeting();
+            System.out.println("\nWe currently have " + totalRoomsLeft + " room(s) available.");
+            // Set/reset variables
+            Room room = new Room();
+            int roomNum = 0;
+            int nights = 0;
+            String roomType = "";
+            int cost = 0;
 
-                // Menu loop
-                do {
-                    allRooms = loadAllRooms();
-                    displayMenu();
-                    choice = getSwitchChoice();
-                    switch (choice) {
-                        case 1:
-                            currentPrices();
-                            break;
-                        case 2:
-                            name = askName(allRooms);
-                            System.out.println("Booking under name: " + name);
-                            break;
-                        case 3:
-                            roomNum = askRoom(allRooms); ////////////////////// change this logic.
-                            for (Room rooms : allRooms) {
-                                if (roomNum == rooms.getNumber()) {
-                                    roomType = rooms.getType();
-                                    cost = rooms.getPricePerNight();
-                                }
+            // Menu loop
+            do {
+                allRooms = loadAllRooms();
+                displayMenu();
+                choice = getSwitchChoice();
+                switch (choice) {
+                    case 1:
+                        currentPrices();
+                        break;
+                    case 2:
+                        name = askName(allRooms);
+                        System.out.println("Booking under name: " + name);
+                        break;
+                    case 3:
+                        roomNum = askRoom(allRooms); ////////////////////// change this logic.
+                        for (Room rooms : allRooms) {
+                            if (roomNum == rooms.getNumber()) {
+                                roomType = rooms.getType();
+                                cost = rooms.getPricePerNight();
                             }
-                            room = new Room(roomNum, roomType, cost);
-                            break;
-                        case 4:
-                            nights = askNights(MAX_NIGHTS);
-                            break;
-                        case 5:
-                            roomInfo(name, room, nights);
-                            break;
-                        case 6:
-                            // checks to see if a room number, number of nights and name has been entered
-                            if (roomNum != 0 && nights != 0 && !name.equals("null")) {
-                                if (isRoomBooked(allRooms, roomNum)) {
-                                    System.out.println("\nSorry, room #" + roomNum + " is already booked.");
-                                    break;
-                                }
-                                allRooms = confirmAndBookRoom(nights, name, allRooms, room);
-                                repeat = bookAnotherRoom(allRooms, name);
-                            } else {
-                                System.out.println(
-                                        "\nInvalid room information. Please choose a room, length of stay, and enter name first.");
+                        }
+                        room = new Room(roomNum, roomType, cost);
+                        break;
+                    case 4:
+                        nights = askNights(MAX_NIGHTS);
+                        break;
+                    case 5:
+                        roomInfo(name, room, nights);
+                        break;
+                    case 6:
+                        // checks to see if a room number, number of nights and name has been entered
+                        if (roomNum != 0 && nights != 0 && !name.equals("null")) {
+                            if (isRoomBooked(allRooms, roomNum)) {
+                                System.out.println("\nSorry, room #" + roomNum + " is already booked.");
+                                break;
                             }
-                            break;
-                        case 7:
-                            String fullName = validateName("full");
-                            fullName = toProperCase(fullName);
-                            displayNameBooking(allRooms, fullName);
-                            break;
-                        case 8:
-                            displayReservationBooking(allRooms);
-                            break;
-                        case 0:
-                            repeat = false;
-                            break;
+                            allRooms = confirmAndBookRoom(nights, name, allRooms, room);
+                            repeat = bookAnotherRoom(allRooms, name);
+                        } else {
+                            System.out.println(
+                                    "\nInvalid room information. Please choose a room, length of stay, and enter name first.");
+                        }
+                        break;
+                    case 7:
+                        String fullName = validateName("full");
+                        fullName = toProperCase(fullName);
+                        displayNameBooking(allRooms, fullName);
+                        break;
+                    case 8:
+                        displayReservationBooking(allRooms);
+                        break;
+                    case 0:
+                        repeat = false;
+                        break;
 
-                        default:
-                            System.out.println("Invalid choice. Please choose a valid option.");
-                            break;
-                    }
+                    default:
+                        System.out.println("Invalid choice. Please choose a valid option.");
+                        break;
+                }
 
-                } while (repeat);
+            } while (repeat);
 
-                break;
-            } while (isNameExceedingMaxRooms(name, allRooms));
-            // Display final bill and save data to file
-            finalBill(allRooms, name);
-            saveAllRooms(allRooms);
-            thankYou();
-            scanner.close();
-        }
+            break;
+        } while (isNameExceedingMaxRooms(name, allRooms));
+        // Display final bill and save data to file
+        finalBill(allRooms, name);
+        saveAllRooms(allRooms);
+        thankYou();
+        scanner.close();
     }
 
     // Method to load booked rooms from the file
@@ -217,7 +216,8 @@ public class Hotel {
         System.out.println("Double rooms #61-90:\t" + MAX_DOUBLE_ROOM_COST + " euro per night.");
         System.out.println("Double rooms #91-100:\t" + MIN_DOUBLE_ROOM_COST + " euro per night.");
     }
-    ///////fix if neither y or n
+
+    /////// fix if neither y or n
     private static boolean isValidInput(String input) {
         while (true)
             if (input.equals("y") || input.equals("n")) {
@@ -228,9 +228,10 @@ public class Hotel {
             }
     }
 
-    //////////////////////////////////////////////////////////fix is neither y or n
-    private static String askName(List<Room> allRooms) { 
+
+    private static String askName(List<Room> allRooms) {
         String fullName;
+        boolean isValid = false;
         String response = "";
         do {
             String firstName = validateName("first");
@@ -241,9 +242,10 @@ public class Hotel {
                 System.out.print(
                         "\nMaximum number of rooms [" + MAX_ROOMS_PER_PERSON + "] have been booked under name: "
                                 + fullName);
-                System.out.print("\nWould you like to book under a different name? [y/n]: ");
+
+                System.out.print("\nBook under a different name? [y/n]: ");
                 response = scanner.nextLine().trim().toLowerCase();
-                if (response.equals("n")) {
+                if (response.equals("n") && isValidInput(response)) {
                     if (roomCount(allRooms, fullName) == 0) {
                         noBooking();
                     }
@@ -252,9 +254,8 @@ public class Hotel {
                     System.exit(0);
                 }
 
-                // If 'y', will ask for a new name
             }
-        } while (isValidInput(response));
+        } while (!isValid);
         return fullName;
 
     }

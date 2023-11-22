@@ -123,6 +123,11 @@ public class Hotel {
         thankYou();
         scanner.close();
     }
+    // END OF MAIN
+
+    // ============================================================================================================================================================
+    // -------------------------------------------------------------------ROOM FILES & GENERATOR-------------------------------------------------------------------
+    // ============================================================================================================================================================
 
     // Method to load booked rooms from the file
     private static List<Room> loadAllRooms() {
@@ -157,6 +162,18 @@ public class Hotel {
         return allRooms;
     }
 
+    // Save room info to file
+    private static void saveAllRooms(List<Room> allRooms) {
+        // Save the details of all rooms to txt file
+        try (FileWriter writer = new FileWriter("all_rooms.txt")) {
+            for (Room room : allRooms) {
+                writer.write(room.totalRoomsToTXT());
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     // Method to generate a list of available room
     private static List<Room> generateAllRooms() {
         List<Room> allRooms = new ArrayList<Room>();
@@ -175,13 +192,94 @@ public class Hotel {
         return allRooms;
     }
 
+    // ============================================================================================================================================================
+    // -------------------------------------------------------------------GENERIC TEXT-----------------------------------------------------------------------------
+    // ============================================================================================================================================================
+
     private static void greeting() {
         System.out.println("\nHello and welcome to Hotel Java!");
-        System.out.println(
-                "As it is the holiday season, you are currently only able to book " + MAX_ROOMS_PER_PERSON
-                        + " rooms in total.");
+        System.out.print("As it is the holiday season, you are currently only able to book ");
+        System.out.println(MAX_ROOMS_PER_PERSON + " rooms per person.");
     }
 
+    private static void invalidInput() {
+        System.out.println("Invalid input. Please only input either 'y' or 'n'");
+    }
+
+    private static void currentPrices() {
+        System.out.println("\nOur current prices are: ");
+        System.out.println("Single rooms #1-50:\t" + MAX_SINGLE_ROOM_COST + " euro per night.");
+        System.out.println("Single rooms #51-60:\t " + MIN_SINLGE_ROOM_COST + " euro per night.");
+        System.out.println("Double rooms #61-90:\t" + MAX_DOUBLE_ROOM_COST + " euro per night.");
+        System.out.println("Double rooms #91-100:\t" + MIN_DOUBLE_ROOM_COST + " euro per night.");
+    }
+
+    private static void hitEnter() {
+        System.out.print("Hit enter to continue: ");
+        scanner.nextLine();
+    }
+
+    private static void thankYou() {
+        System.out.println("\nThank you for choosing Hotel Java.");
+        System.out.println("We hope you enjoy your stay.\n");
+    }
+
+    private static void noBooking() {
+        System.out.println("\nWe're sorry you couldn't find what you were looking for with us today.");
+        System.out.println("We hope you will use our services in the future.");
+        System.exit(0);
+    }
+
+    
+    // ============================================================================================================================================================
+    // -------------------------------------------------------------------MISC. METHODS----------------------------------------------------------------------------
+    // ============================================================================================================================================================
+
+    private static int roomCount(List<Room> allRooms, String name) {
+        int roomCount = 0;
+        for (Room room : allRooms) { // checks all booked rooms' names
+            // Check if the room's name is not null before calling equals
+            if (name != null && name.equals(room.getName())) {
+                roomCount++;
+            }
+        }
+        return roomCount;
+    }
+
+    // Convert string to proper case/title case
+    public static String toProperCase(String input) { // why do I do this to myself
+        // StringBuilder to store the result
+        StringBuilder properCase = new StringBuilder();
+        boolean makeUpperCase = true;
+        // Loop through each character in input string
+        for (char c : input.toCharArray()) {
+            if (Character.isWhitespace(c)) {
+                // Handle whitespace characters
+                properCase.append(c);
+                makeUpperCase = true;
+            } else if (Character.isLetter(c)) {
+                // Handle letter characters
+                if (makeUpperCase) {
+                    // Capitalize the first letter of a word
+                    properCase.append(Character.toUpperCase(c));
+                    makeUpperCase = false;
+                } else {
+                    // Convert the rest of the letters to lowercase
+                    properCase.append(Character.toLowerCase(c));
+                }
+            } else {
+                // Handle special characters
+                properCase.append(c);
+                makeUpperCase = true;
+            }
+        }
+        // StringBuilder to String and return result
+        return properCase.toString();
+    }
+
+    // ============================================================================================================================================================
+    // -------------------------------------------------------------------MENU-------------------------------------------------------------------------------------
+    // ============================================================================================================================================================
     private static void displayMenu() {
         System.out.println("\nMenu:");
         System.out.println("0. Quit\t\t\t\t5. Display current room details");
@@ -208,56 +306,43 @@ public class Hotel {
         }
     }
 
-    // Method for current room pricing
-    private static void currentPrices() {
-        System.out.println("\nOur current prices are: ");
-        System.out.println("Single rooms #1-50:\t" + MAX_SINGLE_ROOM_COST + " euro per night.");
-        System.out.println("Single rooms #51-60:\t " + MIN_SINLGE_ROOM_COST + " euro per night.");
-        System.out.println("Double rooms #61-90:\t" + MAX_DOUBLE_ROOM_COST + " euro per night.");
-        System.out.println("Double rooms #91-100:\t" + MIN_DOUBLE_ROOM_COST + " euro per night.");
-    }
-
-    /////// fix if neither y or n
-    private static boolean isValidInput(String input) {
-        while (true)
-            if (input.equals("y") || input.equals("n")) {
-                return true;
-            } else {
-                System.out.println("Invalid input. Please enter 'y' or 'n'.");
-                return false;
-            }
-    }
-
+    // ============================================================================================================================================================
+    // -------------------------------------------------------------------CASE 2: NAME-----------------------------------------------------------------------------
+    // ============================================================================================================================================================
 
     private static String askName(List<Room> allRooms) {
         String fullName;
-        boolean isValid = false;
-        String response = "";
+
         do {
             String firstName = validateName("first");
             String lastName = validateName("last");
             fullName = toProperCase(firstName) + " " + toProperCase(lastName);
 
             if (isNameExceedingMaxRooms(fullName, allRooms)) {
-                System.out.print(
-                        "\nMaximum number of rooms [" + MAX_ROOMS_PER_PERSON + "] have been booked under name: "
-                                + fullName);
+                System.out.print("\nMaximum number of rooms [" + MAX_ROOMS_PER_PERSON + "]");
+                System.out.println(" have been booked under name: " + fullName);
 
-                System.out.print("\nBook under a different name? [y/n]: ");
-                response = scanner.nextLine().trim().toLowerCase();
-                if (response.equals("n") && isValidInput(response)) {
-                    if (roomCount(allRooms, fullName) == 0) {
-                        noBooking();
+                do {
+                    System.out.print("Book under a different name? [y/n]: ");
+                    String response = scanner.nextLine().trim().toLowerCase();
+
+                    if (response.equals("n")) {
+                        if (roomCount(allRooms, fullName) == 0) {
+                            noBooking();
+                        }
+                        finalBill(allRooms, fullName);
+                        thankYou();
+                        System.exit(0);
+                    } else if (response.equals("y")) {
+                        break;
+                    } else {
+                        invalidInput();
                     }
-                    finalBill(allRooms, fullName);
-                    thankYou();
-                    System.exit(0);
-                }
-
+                } while (true);
             }
-        } while (!isValid);
-        return fullName;
+        } while (isNameExceedingMaxRooms(fullName, allRooms));
 
+        return fullName;
     }
 
     // Method to validate user's name
@@ -272,15 +357,18 @@ public class Hotel {
                 System.out.println("Invalid input. \nNumbers are not allowed.");
                 System.out.println("List of allowed special characters: . ' ` \" _ -");
             } else {
+                System.out.println("\nYou entered the " + part + " name: " + toProperCase(name) + ".");
                 while (true) {
-                    System.out.print("You entered the " + part + " name: " + toProperCase(name) + ".");
-                    System.out.print(" Is this correct? [y/n]: ");
+                    System.out.print("Is this correct? [y/n]: ");
                     String confirm = scanner.nextLine().trim().toLowerCase();
-                    if (isValidInput(confirm) && confirm.equals("y")) {
+                    if (confirm.equals("y")) {
                         isValidName = true;
                         break;
+                    } else if (confirm.equals("n")) {
+                        break;
+                    } else {
+                        invalidInput();
                     }
-                    break;
                 }
             }
         } while (!isValidName);
@@ -298,6 +386,10 @@ public class Hotel {
         return nameCount >= MAX_ROOMS_PER_PERSON;
     }
 
+    // ============================================================================================================================================================
+    // -------------------------------------------------------------------CASE 3: ROOM-----------------------------------------------------------------------------
+    // ============================================================================================================================================================
+
     private static boolean isRoomTypeMaxedOut(String roomType, List<Room> allRooms) {
         int totalRoomsOfType = (roomType.equals("single")) ? 60 : 40;
         int roomCount = 0;
@@ -310,21 +402,6 @@ public class Hotel {
         return roomCount >= totalRoomsOfType;
     }
 
-    // private static boolean isExceedingLimit(String attribute, String value,
-    // List<Room> allRooms, int limit) {
-    // int count = 0;
-
-    // for (Room room : allRooms) {
-    // if (!room.getName().equals("null") &&
-    // (attribute.equals("name") && room.getName().equals(value)) ||
-    // (attribute.equals("type") && room.getType().equals(value))) {
-    // count++;
-    // }
-    // }
-
-    // return count >= limit;
-    // }
-
     private static String askRoomType(List<Room> allRooms) {
         while (true) {
             System.out.print("\nWhat type of room would you like to book? [single/double]: ");
@@ -336,14 +413,19 @@ public class Hotel {
                     System.out.println("\nUnfortunately, all of our " + roomType + " rooms are fully booked.");
                     // switch roomType value
                     roomType = (roomType.equals("single")) ? "double" : "single";
+                    do {
+                        System.out.print("Would you like to proceed with a " + roomType + " room instead? [y/n]: ");
+                        String confirm = scanner.nextLine().trim().toLowerCase();
+                        if (confirm.equals("y")) {
+                            System.out.println("\nYour room type has been switched to " + roomType + ".");
+                            break;
+                        } else if (confirm.equals("n")) {
+                            noBooking();
+                        } else {
+                            invalidInput();
+                        }
+                    } while (true);
 
-                    System.out.print("Would you like to proceed with a " + roomType + " room instead? [y/n]:");
-                    String confirm = scanner.nextLine().trim().toLowerCase();
-                    if (isValidInput(confirm) && confirm.equals("y")) {
-                        System.out.println("\nYour room type has been switched to " + roomType + ".");
-                    } else {
-                        noBooking();
-                    }
                 }
                 return roomType;
             } else {
@@ -352,8 +434,7 @@ public class Hotel {
         }
     }
 
-    // ask user for manual or auto selection of rooms, and return selected room
-    // number
+    // Method for manual or auto selection of room num
     private static int askRoom(List<Room> allRooms) {
         String roomType = askRoomType(allRooms);
         int roomNum = 0;
@@ -468,6 +549,10 @@ public class Hotel {
         }
     }
 
+    // ============================================================================================================================================================
+    // -------------------------------------------------------------------CASE 4: NIGHTS---------------------------------------------------------------------------
+    // ============================================================================================================================================================
+
     // Ask user for length of stay [1-MAX]
     private static int askNights(byte MAX_NIGHTS) {
         while (true) {
@@ -488,6 +573,10 @@ public class Hotel {
         }
     }
 
+    // ============================================================================================================================================================
+    // -------------------------------------------------------------------CASE 5: ROOM DETAILS---------------------------------------------------------------------
+    // ============================================================================================================================================================
+
     // Method to display current room info as you build it
     private static void roomInfo(String name, Room room, int nights) {
         System.out.println("\nName: \t\t\t\t" + (name.equals("null") ? "NaN" : name));
@@ -502,6 +591,10 @@ public class Hotel {
         }
         System.out.println("Number of nights: \t\t" + (nights == 0 ? "NaN" : nights));
     }
+
+    // ============================================================================================================================================================
+    // -------------------------------------------------------------------CASE 6: ROOM RESERVATION-----------------------------------------------------------------
+    // ============================================================================================================================================================
 
     // Method to ask the user if they want to enter a draw for a discount
     private static double enterDiscountDraw(double bill) {
@@ -651,6 +744,10 @@ public class Hotel {
         }
     }
 
+    // ============================================================================================================================================================
+    // -------------------------------------------------------------------CASE 7: RESERVATION BY NAME--------------------------------------------------------------
+    // ============================================================================================================================================================
+
     // Method to display total bookings based on guest's name
     private static double displayNameBooking(List<Room> allRooms, String name) {
         int count = 0;
@@ -671,16 +768,9 @@ public class Hotel {
         return totalPrice;
     }
 
-    private static int roomCount(List<Room> allRooms, String name) {
-        int roomCount = 0;
-        for (Room room : allRooms) { // checks all booked rooms' names
-            // Check if the room's name is not null before calling equals
-            if (name != null && name.equals(room.getName())) {
-                roomCount++;
-            }
-        }
-        return roomCount;
-    }
+    // ============================================================================================================================================================
+    // -------------------------------------------------------------------(CASE 8) RESERVATION NUMBER--------------------------------------------------------------
+    // ============================================================================================================================================================
 
     private static void displayReservationBooking(List<Room> allRooms) {
         int reservationNumber;
@@ -728,64 +818,5 @@ public class Hotel {
             }
         }
         return false; // The reservation number is valid and not in use.
-    }
-
-    private static void hitEnter() {
-        System.out.print("Hit enter to continue: ");
-        scanner.nextLine();
-    }
-
-    private static void thankYou() {
-        System.out.println("\nThank you for choosing Hotel Java.");
-        System.out.println("We hope you enjoy your stay.\n");
-    }
-
-    private static void noBooking() {
-        // Display a message when no booking is found, and exit the program.
-        System.out.println("\nWe're sorry you couldn't find what you were looking for with us today.");
-        System.out.println("We hope you will use our services in the future.");
-        System.exit(0);
-    }
-
-    private static void saveAllRooms(List<Room> allRooms) {
-        // Save the details of all rooms to txt file
-        try (FileWriter writer = new FileWriter("all_rooms.txt")) {
-            for (Room room : allRooms) {
-                writer.write(room.totalRoomsToTXT());
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    // Convert the input string to proper case/title case
-    public static String toProperCase(String input) { // why do I do this to myself
-        // StringBuilder to store the result
-        StringBuilder properCase = new StringBuilder();
-        boolean makeUpperCase = true;
-        // Loop through each character in input string
-        for (char c : input.toCharArray()) {
-            if (Character.isWhitespace(c)) {
-                // Handle whitespace characters
-                properCase.append(c);
-                makeUpperCase = true;
-            } else if (Character.isLetter(c)) {
-                // Handle letter characters
-                if (makeUpperCase) {
-                    // Capitalize the first letter of a word
-                    properCase.append(Character.toUpperCase(c));
-                    makeUpperCase = false;
-                } else {
-                    // Convert the rest of the letters to lowercase
-                    properCase.append(Character.toLowerCase(c));
-                }
-            } else {
-                // Handle special characters
-                properCase.append(c);
-                makeUpperCase = true;
-            }
-        }
-        // StringBuilder to String and return result
-        return properCase.toString();
     }
 }

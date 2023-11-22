@@ -1,12 +1,8 @@
-class Room{
+class Room extends Hotel{
     private String type, name;
     private int cost, room, nights, number;
     private double bill;
     private boolean isReserved = false;
-    static final int MAX_SINGLE_COST = 100;
-    static final int MIN_SINGLE_COST = 90;
-    static final int MAX_DOUBLE_COST = 150;
-    static final int MIN_DOUBLE_COST = 140;
 
     public Room() {
 
@@ -31,20 +27,25 @@ class Room{
         this.name = name;
         this.isReserved = false;
     }
-
-    public Room(int roomNum, String roomType) {
+    public Room(int roomNum, String roomType, int costPerNight){
         this.room = roomNum;
         this.type = roomType;
-        if (roomNum >= 1 && roomNum <= 50) {
-            this.cost = MAX_SINGLE_COST;
-        } else if (roomNum > 50 && roomNum <= 60) {
-            this.cost = MIN_SINGLE_COST;
-        } else if (roomNum > 60 && roomNum <= 90) {
-            this.cost = MAX_DOUBLE_COST;
-        } else {
-            this.cost = MIN_DOUBLE_COST;
-        }
+        this.cost = costPerNight;
     }
+
+    // public Room(int roomNum, String roomType) {
+    //     this.room = roomNum;
+    //     this.type = roomType;
+    //     if (roomNum >= 1 && roomNum <= 50) {
+    //         this.cost = MAX_SINGLE_COST;
+    //     } else if (roomNum > 50 && roomNum <= 60) {
+    //         this.cost = MIN_SINGLE_COST;
+    //     } else if (roomNum > 60 && roomNum <= 90) {
+    //         this.cost = MAX_DOUBLE_COST;
+    //     } else {
+    //         this.cost = MIN_DOUBLE_COST;
+    //     }
+    // }
 
     public String getName() {
         return name;

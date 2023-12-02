@@ -73,7 +73,7 @@ Num: 72, Type: double, Nights: 10, Cost: 150, Total: 1500.00, Name: Bob, Reserva
 Num: 73, Type: double, Nights: 10, Cost: 150, Total: 1500.00, Name: Bob, Reservation: 10012, Reserved: true
 Num: 74, Type: double, Nights: 10, Cost: 150, Total: 1500.00, Name: Bob, Reservation: 10013, Reserved: true
 Num: 75, Type: double, Nights: 10, Cost: 150, Total: 1500.00, Name: Bob, Reservation: 10014, Reserved: true
-Num: 66, Type: double, Nights: 10, Cost: 150, Total: 1500.00, Name: Bob, Reservation: 10015, Reserved: true
+Num: 76, Type: double, Nights: 10, Cost: 150, Total: 1500.00, Name: Bob, Reservation: 10015, Reserved: true
 Num: 77, Type: double, Nights: 10, Cost: 150, Total: 1500.00, Name: Bob, Reservation: 10016, Reserved: true
 Num: 78, Type: double, Nights: 10, Cost: 150, Total: 1500.00, Name: Bob, Reservation: 10017, Reserved: true
 Num: 79, Type: double, Nights: 10, Cost: 150, Total: 1500.00, Name: Bob, Reservation: 10018, Reserved: true

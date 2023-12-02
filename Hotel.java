@@ -34,10 +34,10 @@ public class Hotel {
         String name = "null";
         int choice;
         do {
-            int totalRoomsLeft = roomCount(allRooms, name);
+            int totalRoomsLeft = checkAvailableRooms(allRooms, name);
             if (totalRoomsLeft == 0) {
                 System.out.println("\nUnfortunately we are fully booked at the moment.");
-                System.out.println("Please try again in the future.");
+                System.out.println("Please try again in the future.\n");
                 System.exit(0);
             }
             greeting();
@@ -240,6 +240,15 @@ public class Hotel {
             }
         }
         return roomCount;
+    }
+    private static int checkAvailableRooms(List<Room> allRooms, String name){
+        int count=0;
+        for (Room room : allRooms) {
+            if (!room.isReserved()) {
+                count++;
+            }
+        }
+        return count;
     }
 
     // Method to ask the user if they want to enter a draw for a discount
@@ -659,9 +668,15 @@ public class Hotel {
             if (confirm.equals("y")) {
                 roomWithBill.setReserved(true);
                 System.out.println("Room reserved!");
-                boolean discount = enterDiscountDraw();
-                if(discount){
-                    roomWithBill.setTotalPrice(discountDraw(roomWithBill.getTotalPrice()));
+                
+                if(enterDiscountDraw()){
+                    double newBill = discountDraw(roomWithBill.getTotalPrice());
+                    if(roomWithBill.getTotalPrice() == newBill){
+                        System.out.println("Your bill remains the same.");
+                    }else{
+                        System.out.println("Your bill has been updated!");
+                    }
+                    roomWithBill.setTotalPrice(newBill);
                 }
                 allRooms.set(roomWithBill.getNumber() - 1, roomWithBill);
                 saveAllRooms(allRooms);
@@ -677,6 +692,8 @@ public class Hotel {
 
     // Method to ask the user if they want to book another room
     private static boolean reserveAnotherRoom(List<Room> allRooms, String name) { 
+        int totalRoomsLeft = checkAvailableRooms(allRooms, name);
+
         boolean bookAnother = false;
         while (!bookAnother) {
             System.out.print("Would you like to book a different room? [y/n]: ");
@@ -684,11 +701,15 @@ public class Hotel {
             if (repeat.equals("n")) {
                 break;
             } else if (repeat.equals("y")) {
-                // If yes, set to true and break out of the loop
                 if (isNameExceedingMaxRooms(name, allRooms)) {
                     System.out.print("\nUnfortunately, you have already booked the max amount of rooms.");
                     break;
-                } else {
+                }else if (totalRoomsLeft == 0) {
+                    System.out.println("\nUnfortunately we are fully booked at the moment.");
+                    finalBill(allRooms, name);
+                    thankYou();
+                    System.exit(0);
+                }else {
                     bookAnother = true;
                 }
                 break;

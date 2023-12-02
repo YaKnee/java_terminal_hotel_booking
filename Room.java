@@ -53,23 +53,33 @@ class Room{
         return cost;
     }
 
-    public boolean setReserved() {
-        this.isReserved = true;
-        return isReserved;
+    public void setReserved(boolean reserved) {
+        this.isReserved = reserved;
     }
 
-    public boolean getReserved() {
+    public boolean isReserved() {
         return isReserved;
     }
 
     public double getTotalPrice() {
         return bill;
     }
+    public void setTotalPrice(double bill){
+        this.bill = bill;
+    }
 
     public int getReservationNumber() {
         return number;
     }
 
+    public void displayReservedRoomsInfo() {
+        System.out.println("\nRoom Number:\t\t\t#" + getNumber());
+        System.out.println("Room type:\t\t\t" + getType());
+        System.out.println("Price per night:\t\t" + getPricePerNight());
+        System.out.println("Number of nights:\t\t" + getNightsStay());
+        System.out.printf("Room price for %d nights:\t%.2f%n", getNightsStay(), getTotalPrice());
+        System.out.println("Reservation number: \t\t" + getReservationNumber());
+    }
     public void displayRoomInfo() {
         System.out.println("\nRoom Number:\t\t\t#" + getNumber());
         System.out.println("Room type:\t\t\t" + getType());
@@ -80,9 +90,9 @@ class Room{
     }
 
     public String totalRoomsToTXT() {
-        return String.format("Num: %d, Type: %s, Nights: %d, Cost: %d, Total: %.2f, Name: %s, Reservation: %d%n",
+        return String.format("Num: %d, Type: %s, Nights: %d, Cost: %d, Total: %.2f, Name: %s, Reservation: %d, Reserved: %b%n",
                 getNumber(), getType(), getNightsStay(), getPricePerNight(), getTotalPrice(), getName(),
-                getReservationNumber());
+                getReservationNumber(), isReserved());
     }
 }
 

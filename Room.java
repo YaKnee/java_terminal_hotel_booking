@@ -7,7 +7,7 @@ class Room{
     public Room() {
 
     }
-
+    //Used for updating room file
     public Room(int roomNum, String roomType, int nights, int costPerNight, double totalPrice, String reservationName,
             int reservationNumber) {
         this.room = roomNum;
@@ -19,14 +19,15 @@ class Room{
         this.number = reservationNumber;
         this.isReserved = false;
     }
-
-        public Room(int roomNum, String roomType, int costPerNight, String name) {
+    //Used for generating room file
+    public Room(int roomNum, String roomType, int costPerNight, String name) {
         this.room = roomNum;
         this.type = roomType;
         this.cost = costPerNight;
         this.name = name;
         this.isReserved = false;
     }
+    //only used for Option 5
     public Room(int roomNum, String roomType, int costPerNight){
         this.room = roomNum;
         this.type = roomType;

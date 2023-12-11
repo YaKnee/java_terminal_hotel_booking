@@ -19,12 +19,7 @@ public class Hotel {
     private static final int MIN_DOUBLE_ROOM_COST = 140;
 
     // TO DO
-    // change all reservation checks to use attribute of room class
     // make a readme, how it works, comment how you did and what was difficult
-    // add nights to after booking room, maybe just before discount draw?
-    // if choice is 0 and room details havent been filled ask to redo "are you
-    /////sure?"
-    //add option m to go back to menu at any point
 
     public static void main(String[] args) {
         System.setProperty("file.encoding", "UTF-8"); // y no work
@@ -32,9 +27,9 @@ public class Hotel {
         List<Room> allRooms = loadAllRooms();
         boolean repeat = true;
         String name = "null";
-        int choice;
+        
         do {
-            int totalRoomsLeft = checkAvailableRooms(allRooms, name);
+            int totalRoomsLeft = checkAvailableRooms(allRooms);
             if (totalRoomsLeft == 0) {
                 System.out.println("\nUnfortunately we are fully booked at the moment.");
                 System.out.println("Please try again in the future.\n");
@@ -53,7 +48,7 @@ public class Hotel {
             do {
                 allRooms = loadAllRooms();
                 displayMenu();
-                choice = getSwitchChoice();
+                int choice = getSwitchChoice();
                 switch (choice) {
                     case 1:
                         currentPrices();
@@ -63,10 +58,10 @@ public class Hotel {
                         System.out.println("Booking under name: " + name);
                         break;
                     case 3:
-                        roomNum = askRoom(allRooms); 
+                        roomType = askRoomType(allRooms, name);
+                        roomNum = askRoom(allRooms, roomType); 
                         for (Room rooms : allRooms) {
                             if (roomNum == rooms.getNumber()) {
-                                roomType = rooms.getType();
                                 cost = rooms.getPricePerNight();
                             }
                         }
@@ -85,7 +80,7 @@ public class Hotel {
                                 System.out.println("\nYou have already booked room #" + roomNum + ".");
                                 break;
                             }
-                            allRooms = confirmAndBookRoom(nights, name, allRooms, room);
+                            allRooms = reserveRoom(nights, name, allRooms, room);
                             repeat = reserveAnotherRoom(allRooms, name);
                         } else {
                             System.out.println(
@@ -231,7 +226,7 @@ public class Hotel {
     // -------------------------------------------------------------------MISC. METHODS----------------------------------------------------------------------------
     // ============================================================================================================================================================
 
-    private static int roomCount(List<Room> allRooms, String name) {
+    private static int roomCountForName(List<Room> allRooms, String name) {
         int roomCount = 0;
         for (Room room : allRooms) { 
             // Check if input name matches name on reservation
@@ -241,7 +236,8 @@ public class Hotel {
         }
         return roomCount;
     }
-    private static int checkAvailableRooms(List<Room> allRooms, String name){
+
+    private static int checkAvailableRooms(List<Room> allRooms){
         int count=0;
         for (Room room : allRooms) {
             if (!room.isReserved()) {
@@ -373,7 +369,7 @@ public class Hotel {
 
     private static String askName(List<Room> allRooms) {
         String fullName;
-
+        boolean repeat = true;
         do {
             String firstName = validateName("first");
             String lastName = validateName("last");
@@ -383,53 +379,51 @@ public class Hotel {
                 System.out.print("\nMaximum number of rooms [" + MAX_ROOMS_PER_PERSON + "]");
                 System.out.println(" have been booked under name: " + fullName);
 
-                do {
+                while (true){
                     System.out.print("Book under a different name? [y/n]: ");
                     String response = scanner.nextLine().trim().toLowerCase();
-
                     if (response.equals("n")) {
                         noBooking();
                     } else if (response.equals("y")) {
+                        //break out of loop and ask for new name
                         break;
                     } else {
                         invalidInput();
                     }
-                } while (true);
+                } 
+            }else{
+                repeat = false;
             }
-        } while (isNameExceedingMaxRooms(fullName, allRooms));
-
+        } while (repeat);
         return fullName;
     }
 
     // Method to validate user's name
     private static String validateName(String part) {
         String name;
-        boolean isValidName = false;
-        do {
+        while(true) {
             System.out.print("\nPlease enter " + part + " name: ");
             name = scanner.nextLine().trim().toLowerCase();
-            // \\p{L} to allow any foreign character and list of allowed special characters
+            // Validate the name using a regex pattern
             if (!name.matches("^[\\p{L} .'`\"_-]+")) {
-                System.out.println("Invalid input. \nNumbers are not allowed.");
+                System.out.println("Invalid input. Numbers are not allowed.");
                 System.out.println("List of allowed special characters: . ' ` \" _ -");
             } else {
                 System.out.println("\nYou entered the " + part + " name: " + toProperCase(name) + ".");
+                // Confirm if the entered name is correct
                 while (true) {
                     System.out.print("Is this correct? [y/n]: ");
                     String confirm = scanner.nextLine().trim().toLowerCase();
                     if (confirm.equals("y")) {
-                        isValidName = true;
-                        break;
+                        return name; // Return the validated name if confirmed
                     } else if (confirm.equals("n")) {
-                        //repeat the outer loop
-                        break;
+                        break; // Repeat the outer loop if not confirmed
                     } else {
                         invalidInput();
                     }
                 }
             }
-        } while (!isValidName);
-        return name;
+        } 
     }
 
     private static boolean isNameExceedingMaxRooms(String name, List<Room> allRooms) {
@@ -453,36 +447,37 @@ public class Hotel {
         int roomCount = 0;
 
         for (Room room : allRooms) {
-            if (!room.getName().equals("null") && room.getType().equals(roomType)) {
+            if (room.isReserved() && room.getType().equals(roomType)) {
                 roomCount++;
             }
         }
         return roomCount >= totalRoomsOfType;
     }
 
-    private static String askRoomType(List<Room> allRooms) {
+    private static String askRoomType(List<Room> allRooms, String name) {
         while (true) {
             System.out.print("\nWhat type of room would you like to book? [single/double]: ");
             String roomType = scanner.nextLine().trim().toLowerCase();
-            // checking if input is valid
+
             if (roomType.equals("single") || roomType.equals("double")) {
                 // Check if all rooms of a specific type are fully booked
                 if (isRoomTypeMaxedOut(roomType, allRooms)) {
                     System.out.println("\nUnfortunately, all of our " + roomType + " rooms are fully booked.");
-                    // switch roomType value
+                    // switch room's type
                     roomType = (roomType.equals("single")) ? "double" : "single";
-                    do {
+
+                    while (true){
                         System.out.print("Would you like to proceed with a " + roomType + " room instead? [y/n]: ");
                         String confirm = scanner.nextLine().trim().toLowerCase();
                         if (confirm.equals("y")) {
                             System.out.println("\nYour room type has been switched to " + roomType + ".");
                             break;
                         } else if (confirm.equals("n")) {
-                            noBooking();
+                            finalBill(allRooms, name);
                         } else {
                             invalidInput();
                         }
-                    } while (true);
+                    } 
                 }
                 return roomType;
             } else {
@@ -492,30 +487,29 @@ public class Hotel {
     }
 
     // Method for manual or auto selection of room num
-    private static int askRoom(List<Room> allRooms) {
-        String roomType = askRoomType(allRooms);
+    private static int askRoom(List<Room> allRooms, String roomType) {
         int roomNum = 0;
-        System.out.print("Would you prefer an automatically generated room or manual room selection? [auto/manual]: ");
-        do {
+        System.out.print("Would you prefer an automatically generated room or manual room selection? [auto = A, manual = M]: ");
+        while (true) {
             String inputChoice = scanner.nextLine().trim().toLowerCase();
-            if (inputChoice.equals("auto")) {
+            if (inputChoice.equals("a")) {
                 roomNum = autoRoom(roomType, allRooms);
                 System.out.printf("%nYou have been assigned %s room #%d.%n", roomType, roomNum);
                 break;
-            } else if (inputChoice.equals("manual")) {
+            } else if (inputChoice.equals("m")) {
                 displayRoomsOfType(roomType, allRooms);
                 roomNum = manualRoomSelection(roomType, allRooms);
                 System.out.printf("%nYou have chosen %s room #%d.%n", roomType, roomNum);
                 break;
             } else {
                 System.out.print("Sorry, '" + inputChoice + "' was not an option.");
+                System.out.print(" Please input either 'A' or 'M': ");
             }
-            System.out.print(" Please input either 'auto' or 'manual': ");
-        } while (true);
+        }
         return roomNum;
     }
 
-    // checks if input/generated room number has already been booked
+    // Method to check if selected room number has already been booked
     private static boolean roomIsBooked(List<Room> allRooms, int roomNum) {
         for (Room room : allRooms) {
             if (room.getNumber() == roomNum && room.isReserved()) {
@@ -543,7 +537,7 @@ public class Hotel {
         }
     }
 
-    // Method to manually select an available room number based on the room type
+    // Method to display available rooms based on the room type
     private static void displayRoomsOfType(String roomType, List<Room> allRooms) {
         int numColumns = 10;
 
@@ -557,7 +551,7 @@ public class Hotel {
             if (!room.isReserved()) {
                 System.out.print("#" + room.getNumber() + "\t");
             } else {
-                //room reserved = #
+                //room reserved = _
                 System.out.print("#_\t");
             }
             // creates grid for available rooms
@@ -567,8 +561,7 @@ public class Hotel {
         }
     }
 
-
-    // Method to prompt user for specific room number
+    // Method to manually select a room
     private static int manualRoomSelection(String roomType, List<Room> allRooms) {
         while (true) {
             System.out.print("\nWhat " + roomType + " room would you like to book?: #");
@@ -576,8 +569,7 @@ public class Hotel {
                 int roomNum = Integer.parseInt(scanner.nextLine().trim());
 
                 // Check if the entered room number is valid for the selected room type
-                if ((roomType.equals("single") && roomNum >= 1 && roomNum <= 60) ||
-                        (roomType.equals("double") && roomNum >= 61 && roomNum <= 100)) {
+                if ((roomType.equals("single") && roomNum >= 1 && roomNum <= 60) || (roomType.equals("double") && roomNum >= 61 && roomNum <= 100)) {
                     // Check if the selected room number is not already booked
                     if (roomIsBooked(allRooms, roomNum)) {
                          // Display an error message if the selected room is already booked
@@ -586,7 +578,7 @@ public class Hotel {
                         return roomNum;
                     }
                 } else {
-                    System.out.println("Please choose a valid " + roomType+ " room number.");
+                    System.out.println("Please choose a valid " + roomType + " room number.");
                 }
             } catch (NumberFormatException e) {
                 System.out.println("Invalid input. Please only enter a number value.");
@@ -598,7 +590,7 @@ public class Hotel {
     // -------------------------------------------------------------------CASE 4: NIGHTS---------------------------------------------------------------------------
     // ============================================================================================================================================================
 
-    // Ask user for length of stay [1-MAX]
+    // Method to ask user for length of stay 
     private static int askNights(byte MAX_NIGHTS) {
         while (true) {
             System.out.print("\nHow many nights do you plan on spending with us? [max: " + MAX_NIGHTS + "]: ");
@@ -612,7 +604,6 @@ public class Hotel {
                     return nights;
                 }
             } catch (NumberFormatException e) {
-                // handles case where input is not valid integer
                 System.out.println("Invalid input. Please enter a positive number value.");
             }
         }
@@ -641,11 +632,9 @@ public class Hotel {
     // -------------------------------------------------------------------CASE 6: ROOM RESERVATION-----------------------------------------------------------------
     // ============================================================================================================================================================
 
-    private static List<Room> confirmAndBookRoom(int nights, String name, List<Room> allRooms, Room room) {
-
+    private static List<Room> reserveRoom(int nights, String name, List<Room> allRooms, Room room) {
         double bill = room.getPricePerNight() * nights;
-
-        // Display room and bill details (own method?)
+        // Display room and bill details 
         System.out.printf("%nThe price of this %s room is: %d euro per night.%n", room.getType(), room.getPricePerNight());
         System.out.printf("Your current bill for %d nights is: %.2f euro.%n", nights, bill);
         int reservationNumber = reservationNumber(allRooms);
@@ -654,30 +643,36 @@ public class Hotel {
         System.out.println("\nName: " + toProperCase(name));
         roomWithBill.displayRoomInfo();
         
-        allRooms = confirmReservation(allRooms, roomWithBill);
+        allRooms = confirmBooking(allRooms, roomWithBill);
         return allRooms;
     }
 
 
     // Method to confirm or abort the current reservation
-    private static List<Room> confirmReservation(List<Room> allRooms, Room roomWithBill) {
-        do {
+    private static List<Room> confirmBooking(List<Room> allRooms, Room roomWithBill) {
+        while(true) {
             System.out.print("\nConfirm current reservation? [y/n]: ");
             String confirm = scanner.nextLine().trim().toLowerCase();
 
             if (confirm.equals("y")) {
+                // Set the room as reserved
                 roomWithBill.setReserved(true);
                 System.out.println("Room reserved!");
-                
-                if(enterDiscountDraw()){
+
+                // Check if the user wants to enter a discount draw
+                if (enterDiscountDraw()) {
+                    // Calculate the new bill based on the discount draw
                     double newBill = discountDraw(roomWithBill.getTotalPrice());
-                    if(roomWithBill.getTotalPrice() == newBill){
-                        System.out.println("Your bill remains the same.");
-                    }else{
-                        System.out.println("Your bill has been updated!");
+
+                    // Check if the bill has been updated and display the appropriate message
+                    if (roomWithBill.getTotalPrice() != newBill) {
+                        System.out.println("Your bill has been updated!\n");
+                        roomWithBill.setTotalPrice(newBill);
+                    } else {
+                        System.out.println("Your bill remains the same.\n");
                     }
-                    roomWithBill.setTotalPrice(newBill);
                 }
+                // Update the room information in the list and save the changes
                 allRooms.set(roomWithBill.getNumber() - 1, roomWithBill);
                 saveAllRooms(allRooms);
                 return allRooms;
@@ -687,15 +682,13 @@ public class Hotel {
             } else {
                 invalidInput();
             }
-        } while (true);
+        }
     }
 
     // Method to ask the user if they want to book another room
     private static boolean reserveAnotherRoom(List<Room> allRooms, String name) { 
-        int totalRoomsLeft = checkAvailableRooms(allRooms, name);
-
-        boolean bookAnother = false;
-        while (!bookAnother) {
+        int totalRoomsLeft = checkAvailableRooms(allRooms);
+        while (true) {
             System.out.print("Would you like to book a different room? [y/n]: ");
             String repeat = scanner.nextLine().trim().toLowerCase();
             if (repeat.equals("n")) {
@@ -706,24 +699,21 @@ public class Hotel {
                     break;
                 }else if (totalRoomsLeft == 0) {
                     System.out.println("\nUnfortunately we are fully booked at the moment.");
-                    finalBill(allRooms, name);
-                    thankYou();
-                    System.exit(0);
+                    break;
                 }else {
-                    bookAnother = true;
+                    return true;
                 }
-                break;
             } else {
                 invalidInput();
             }
         }
-        return bookAnother;
+        return false;
     }
 
     // Method to display the final bill
     private static void finalBill(List<Room> allRooms, String name) { 
         // Display the total bill amount
-        int count = roomCount(allRooms, name);
+        int count = roomCountForName(allRooms, name);
         if (name.equals("null") || count == 0) {
             noBooking();
         } else {
@@ -738,20 +728,20 @@ public class Hotel {
 
     private static void displayAllRooms(List<Room> allRooms){
         int numColumns = 10;
+        int count = 1;
         System.out.println("\nHere are all of our available rooms:\n");
-        for (int i = 0; i < 100; i++) {
-            Room room = allRooms.get(i);
-            // room not booked = num, room booked = #
+        for (Room room : allRooms) {
             if (!room.isReserved()) {
                 System.out.print("#" + room.getNumber() + "\t");
             } else {
                 System.out.print("#_\t");
             }
-            // creates grid for available rooms
-            if ((i + 1) % numColumns == 0) {
+            // create grid for available rooms
+            if (count++ % numColumns == 0) {
                 System.out.println();
             }
         }
+
     }
     
     // ============================================================================================================================================================
@@ -763,7 +753,7 @@ public class Hotel {
         int count = 0;
         double totalPrice = 0;
         // Count rooms in total booked rooms list based on name of guest
-        count = roomCount(allRooms, name);
+        count = roomCountForName(allRooms, name);
         // Display the count of booked rooms
         System.out.println("\n"+count + " reservation(s) under name: " + toProperCase(name));
         // Loop through booked rooms to display room info and accumulate total price

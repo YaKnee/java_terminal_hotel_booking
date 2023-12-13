@@ -18,9 +18,6 @@ public class Hotel {
     private static final int MAX_DOUBLE_ROOM_COST = 150;
     private static final int MIN_DOUBLE_ROOM_COST = 140;
 
-    // TO DO
-    // make a readme, how it works, comment how you did and what was difficult
-
     public static void main(String[] args) {
         System.setProperty("file.encoding", "UTF-8"); // y no work
         // Load available and booked rooms from files
@@ -46,7 +43,7 @@ public class Hotel {
 
             // Menu loop
             do {
-                allRooms = loadAllRooms();
+                //allRooms = loadAllRooms();
                 displayMenu();
                 int choice = getSwitchChoice();
                 switch (choice) {
@@ -287,6 +284,7 @@ public class Hotel {
         return bill;
     }
 
+    
     // Convert string to proper case/title case
     public static String toProperCase(String input) { // why do I do this to myself
         // StringBuilder to store the result
@@ -524,11 +522,9 @@ public class Hotel {
         int roomNum = 0;
         while (true) {
             if (roomType.equals("single")) {
-                // Generate a random number between 1 and 60 for a single room
-                roomNum = 1 + (int) (Math.random() * ((60 - 1) + 1)); // random number between 1 and 60
+                roomNum = 1 + (int) (Math.random() * ((60 - 1) + 1)); // random number between 1 and 60: single
             } else {
-                // Generate a random number between 61 and 100 for a double room
-                roomNum = 61 + (int) (Math.random() * ((100 - 61) + 1)); // random number between 61 and 100
+                roomNum = 61 + (int) (Math.random() * ((100 - 61) + 1)); // random number between 61 and 100: double
             }
             // Check if the auto-generated room number is not reserved
             if (!roomIsBooked(allRooms, roomNum)) {
@@ -599,7 +595,7 @@ public class Hotel {
                 if (nights < 1) {
                     System.out.println("Please only enter positive numbers.");
                 } else if (nights > MAX_NIGHTS) {
-                    System.out.println("The maximum number of nights is " + MAX_NIGHTS + ".");
+                    System.out.println("The maximum number of nights you can select is " + MAX_NIGHTS + ".");
                 } else {
                     return nights;
                 }
@@ -657,7 +653,9 @@ public class Hotel {
             if (confirm.equals("y")) {
                 // Set the room as reserved
                 roomWithBill.setReserved(true);
+                allRooms.set(roomWithBill.getNumber() - 1, roomWithBill);
                 System.out.println("Room reserved!");
+                saveAllRooms(allRooms);
 
                 // Check if the user wants to enter a discount draw
                 if (enterDiscountDraw()) {
@@ -667,14 +665,14 @@ public class Hotel {
                     // Check if the bill has been updated and display the appropriate message
                     if (roomWithBill.getTotalPrice() != newBill) {
                         System.out.println("Your bill has been updated!\n");
+                        // Update the room information in the list and save the changes
                         roomWithBill.setTotalPrice(newBill);
+                        allRooms.set(roomWithBill.getNumber() - 1, roomWithBill);
+                        saveAllRooms(allRooms);
                     } else {
                         System.out.println("Your bill remains the same.\n");
                     }
                 }
-                // Update the room information in the list and save the changes
-                allRooms.set(roomWithBill.getNumber() - 1, roomWithBill);
-                saveAllRooms(allRooms);
                 return allRooms;
             } else if (confirm.equals("n")) {
                 // If aborted, return the original available rooms
@@ -701,6 +699,7 @@ public class Hotel {
                     System.out.println("\nUnfortunately we are fully booked at the moment.");
                     break;
                 }else {
+                    System.out.println("\nWe currently have " + totalRoomsLeft + " room(s) available.");
                     return true;
                 }
             } else {

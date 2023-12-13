@@ -2,11 +2,10 @@ class Room{
     private String type, name;
     private int cost, room, nights, number;
     private double bill;
-    private boolean isReserved = false;
+    private boolean isReserved;
 
-    public Room() {
-
-    }
+    public Room() {}
+    
     //Used for updating room file
     public Room(int roomNum, String roomType, int nights, int costPerNight, double totalPrice, String reservationName,
             int reservationNumber) {
@@ -73,14 +72,6 @@ class Room{
         return number;
     }
 
-    public void displayReservedRoomsInfo() {
-        System.out.println("\nRoom Number:\t\t\t#" + getNumber());
-        System.out.println("Room type:\t\t\t" + getType());
-        System.out.println("Price per night:\t\t" + getPricePerNight());
-        System.out.println("Number of nights:\t\t" + getNightsStay());
-        System.out.printf("Room price for %d nights:\t%.2f%n", getNightsStay(), getTotalPrice());
-        System.out.println("Reservation number: \t\t" + getReservationNumber());
-    }
     public void displayRoomInfo() {
         System.out.println("\nRoom Number:\t\t\t#" + getNumber());
         System.out.println("Room type:\t\t\t" + getType());

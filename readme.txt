@@ -1,3 +1,5 @@
+Name: Jani O'Connell
+
 Loads in available rooms file, creates one if there isn't one. 
 If no available rooms left, code will stop
 
